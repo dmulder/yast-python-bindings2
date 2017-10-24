@@ -1,20 +1,17 @@
 #include "yast.h"
 
-static Y2Namespace * getNs (const char * ns_name, const char * func_name) 
+static Y2Namespace * getNs(const char * ns_name)
 {
-	Import import(ns_name);	// has a static cache
-	Y2Namespace *ns = import.nameSpace();
-	if (ns == NULL) {
-		y2error ("... for a Python call of %s", func_name);
-	} else {
-		ns->initialize ();
-	}
-	return ns;
+    Import import(ns_name); // has a static cache
+    Y2Namespace *ns = import.nameSpace();
+    if (ns != NULL)
+        ns->initialize();
+    return ns;
 }
 
 static void SetYCPVariable(const string & namespace_name, const string & variable_name, YCPValue value)
 {
-    Y2Namespace *ns = getNs(namespace_name.c_str(), variable_name.c_str());
+    Y2Namespace *ns = getNs(namespace_name.c_str());
 
     if (ns == NULL) {
         y2error ("Creating namespace fault.");
@@ -34,7 +31,7 @@ static void SetYCPVariable(const string & namespace_name, const string & variabl
 
 static YCPValue GetYCPVariable(const string & namespace_name, const string & variable_name)
 {
-    Y2Namespace *ns = getNs(namespace_name.c_str(), variable_name.c_str());
+    Y2Namespace *ns = getNs(namespace_name.c_str());
 
     if (ns == NULL) {
         y2error ("Creating namespace fault.");
@@ -60,7 +57,7 @@ static YCPValue CallYCPFunction(const string & namespace_name, const string & fu
 	YCPValue ycpRetValue = YCPNull ();
 
     // create namespace
-    Y2Namespace *ns = getNs(namespace_name.c_str(), function_name.c_str());
+    Y2Namespace *ns = getNs(namespace_name.c_str());
 
     if (ns == NULL) {
         y2error ("Creating namespace fault.");
