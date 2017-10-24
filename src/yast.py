@@ -7,11 +7,11 @@ from ycp2 import YCPInteger as Integer
 from ycp2 import YCPBoolean as Boolean
 from ycp2 import YCPFloat as Float
 from ycp2 import Id, Opt
-from ycp2 import CallYCPFunction
 from ycp2 import startup_yuicomponent, shutdown_yuicomponent
 from ycp2 import module_import
 module_import('Wizard')
 import Wizard
+from ytypes import pytval_to_ycp, ycp_to_pyval
 
 class UISequencer:
     def __init__(self, *cli_args):
@@ -32,29 +32,10 @@ class UISequencer:
 
         UI.CloseDialog()
 
-def ytype(item):
-    if type(item) is list:
-        sl = List()
-        for si in item:
-            sl.push_back(ytype(si))
-        return sl
-    elif type(item) is str:
-        return String(item)
-    elif type(item) is int:
-        return Integer(item)
-    elif type(item) is bool:
-        return Boolean(item)
-    elif type(item) is float:
-        return Float(item)
-    elif type(item) in [Term, Symbol, String, Integer, Boolean, Float, List]:
-        return item
-    else:
-        raise SyntaxError, 'Type of value "%s" unrecognized, %s' % (item, str(type(item)))
-
 def run(func, *args):
     l = List()
     for item in args:
-        l.push_back(ytype(item))
+        l.push_back(pytval_to_ycp(item))
     return Term(func, l)
 
 def BarGraph(*args):
