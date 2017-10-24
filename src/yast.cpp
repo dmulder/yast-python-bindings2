@@ -49,6 +49,67 @@ static YCPValue GetYCPVariable(const string & namespace_name, const string & var
     return sym_entry->value();
 }
 
+static PyMethodDef new_module_methods[] =
+{
+    {NULL, NULL, 0, NULL}
+};
+
+static bool RegFunctions(const string & NameSpace, YCPList list_functions, YCPList list_variables)
+{
+    PyObject *new_module = Py_InitModule(NameSpace.c_str(), new_module_methods);
+    if (new_module == NULL) return false;
+
+    PyObject *new_module_dict = PyModule_GetDict(new_module);
+    if (new_module_dict == NULL) return false;
+
+    auto g = PyDict_New();
+    if (!g) return false;
+    PyDict_SetItemString(g, "__builtins__", PyEval_GetBuiltins());
+
+    for (int i = 0; i < list_functions.size(); i++) {
+        string function = list_functions->value(i)->asString()->value();
+        stringstream func_def;
+        PyObject *code;
+        func_def << "def " << function << "(*args):" << endl;
+        func_def << "\tfrom ycp2 import CallYCPFunction" << endl;
+        func_def << "\tfrom ytypes import pytval_to_ycp, ycp_to_pyval" << endl;
+        func_def << "\targs = tuple([pytval_to_ycp(arg) for arg in args])" << endl;
+        func_def << "\treturn ycp_to_pyval(CallYCPFunction('" << NameSpace << "', '" << function << "', *args))" << endl;
+
+printf("%s", func_def.str().c_str());
+        code = PyRun_String(func_def.str().c_str(), Py_single_input, g, new_module_dict);
+        Py_XDECREF(code);
+    }
+
+    return true;
+}
+
+YCPList * ycpListFunctions;
+YCPList * ycpListVariables;
+
+static bool HandleSymbolTable (const SymbolEntry & se)
+{
+    if (se.isFunction ()) {
+        ycpListFunctions->add(YCPString(se.name()));
+    } else if (se.isVariable ()) {
+        ycpListVariables->add(YCPString(se.name()));
+    }
+    return true;
+}
+
+void module_import(const string & ns_name)
+{
+    Y2Namespace *ns = getNs(ns_name.c_str());
+    ycpListFunctions = new YCPList();
+    ycpListVariables = new YCPList();
+
+    ns->table()->forEach (&HandleSymbolTable);
+    RegFunctions(ns_name, *ycpListFunctions, *ycpListVariables);
+
+    delete ycpListFunctions;
+    delete ycpListVariables;
+}
+
 PyObject *ycp_to_pyval(YCPValue val)
 {
     if (val->isString())
