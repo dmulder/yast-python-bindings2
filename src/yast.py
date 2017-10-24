@@ -7,8 +7,33 @@ from ycp2 import YCPInteger as Integer
 from ycp2 import YCPBoolean as Boolean
 from ycp2 import YCPFloat as Float
 from ycp2 import Id, Opt
-from ycp2 import Wizard
+from ycp2 import CallYCPFunction
 from ycp2 import startup_yuicomponent, shutdown_yuicomponent
+
+class Wizard:
+    @staticmethod
+    def CreateDialog():
+        return CallYCPFunction('Wizard', 'CreateDialog')
+
+    @staticmethod
+    def SetContentsButtons(title, contents, help_txt, back_txt, next_txt):
+        return CallYCPFunction('Wizard', 'SetContentsButtons', String(title), contents, String(help_txt), String(back_txt), String(next_txt))
+
+    @staticmethod
+    def DisableBackButton():
+        return CallYCPFunction('Wizard', 'DisableBackButton')
+
+    @staticmethod
+    def DisableNextButton():
+        return CallYCPFunction('Wizard', 'DisableNextButton')
+
+    @staticmethod
+    def EnableNextButton():
+        return CallYCPFunction('Wizard', 'EnableNextButton')
+
+    @staticmethod
+    def DisableAbortButton():
+        return CallYCPFunction('Wizard', 'DisableAbortButton')
 
 class UISequencer:
     def __init__(self, *cli_args):

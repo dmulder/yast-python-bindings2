@@ -46,5 +46,6 @@ class YCPString;
 %varargs(25, char * opt = NULL) Opt;
 %template() std::map<std::string, std::string>;
 %include "wrap.h"
+%varargs(25, YCPValue * val = NULL) CallYCPFunction;
 %include "yast.h"
 

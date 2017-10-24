@@ -49,11 +49,29 @@ static YCPValue GetYCPVariable(const string & namespace_name, const string & var
     return sym_entry->value();
 }
 
-static YCPValue CallYCPFunction(const string & namespace_name, const string & function_name, ...)
+PyObject *ycp_to_pyval(YCPValue val)
+{
+    if (val->isString())
+        return PyString_FromString(val->asString()->value().c_str());
+    else if (val->isInteger())
+        return PyInt_FromLong(val->asInteger()->value());
+    else if (val->isBoolean())
+        return PyBool_FromLong(val->asBoolean()->value());
+    else if (val->isVoid())
+        Py_RETURN_NONE;
+    else if (val->isFloat())
+        return PyFloat_FromDouble(val->asFloat()->value());
+    else if (val->isSymbol())
+        return PyString_FromString(val->asSymbol()->symbol().c_str());
+    else
+        Py_RETURN_NONE;
+}
+
+YCPValue CallYCPFunction(const string & namespace_name, const string & function_name, ...)
 {
     va_list args;
     va_start(args, function_name);
-    YCPValue ycpArg = YCPNull ();
+    YCPValue * ycpArg = NULL;
 	YCPValue ycpRetValue = YCPNull ();
 
     // create namespace
@@ -85,11 +103,11 @@ static YCPValue CallYCPFunction(const string & namespace_name, const string & fu
     }
 
     for (int i=0; i < fun_type->parameterCount(); i++) {
-        ycpArg = va_arg(args, YCPValue);
-        if (ycpArg.isNull())
-            ycpArg = YCPVoid();
+        ycpArg = va_arg(args, YCPValue*);
+        if (ycpArg->isNull())
+            *ycpArg = YCPVoid();
 
-        if (!func_call->appendParameter(ycpArg)) {
+        if (!func_call->appendParameter(*ycpArg)) {
             y2error ("Problem with adding arguments of function %s", function_name);
             return YCPNull();
         }
@@ -137,36 +155,6 @@ static bool init_ui(const string & ui_name)
         y2debug ("UI component already present: %s", c->name ().c_str ());
     }
     return true;
-}
-
-void Wizard::CreateDialog()
-{
-    CallYCPFunction("Wizard", "CreateDialog");
-}
-
-void Wizard::SetContentsButtons(const string & title, const YCPValue & contents, const string & help_txt, const string & back_txt, const string & next_txt)
-{
-    CallYCPFunction("Wizard", "SetContentsButtons", YCPString(title), contents, YCPString(help_txt), YCPString(back_txt), YCPString(next_txt));
-}
-
-void Wizard::DisableBackButton()
-{
-
-}
-
-void Wizard::DisableNextButton()
-{
-
-}
-
-void Wizard::EnableNextButton()
-{
-
-}
-
-void Wizard::DisableAbortButton()
-{
-
 }
 
 void startup_yuicomponent()
