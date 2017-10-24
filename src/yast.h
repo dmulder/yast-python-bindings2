@@ -15,26 +15,22 @@
 #include <ycp/YCPTerm.h>
 #include <ycp/YCPString.h>
 #include <ycp/YCPVoid.h>
+#include <ycp/YCPFloat.h>
+#include <ycp/YCPBoolean.h>
 #include <ycp/SymbolTable.h>
 #include <yui/YUILoader.h>
 #include <yui/YSettings.h>
+#include <Python.h>
 
 #include <string>
 #include <vector>
 #include <cstdarg>
+#include <sstream>
 using namespace std;
 
-class Wizard
-{
-public:
-    static void CreateDialog();
-    static void SetContentsButtons(const string &, const YCPValue &, const string &, const string &, const string &);
-    static void DisableBackButton();
-    static void DisableNextButton();
-    static void EnableNextButton();
-    static void DisableAbortButton();
-};
-
+PyObject *ycp_to_pyval(YCPValue val);
+void module_import(const string & ns_name);
+YCPValue CallYCPFunction(YCPList args);
 void startup_yuicomponent();
 void shutdown_yuicomponent();
 

@@ -49,12 +49,12 @@ static YCPValue GetYCPVariable(const string & namespace_name, const string & var
     return sym_entry->value();
 }
 
-static YCPValue CallYCPFunction(const string & namespace_name, const string & function_name, ...)
+YCPValue CallYCPFunction(YCPList args)
 {
-    va_list args;
-    va_start(args, function_name);
     YCPValue ycpArg = YCPNull ();
 	YCPValue ycpRetValue = YCPNull ();
+    string namespace_name = args->value(0)->asString()->value();
+    string function_name = args->value(1)->asString()->value();
 
     // create namespace
     Y2Namespace *ns = getNs(namespace_name.c_str());
@@ -85,7 +85,7 @@ static YCPValue CallYCPFunction(const string & namespace_name, const string & fu
     }
 
     for (int i=0; i < fun_type->parameterCount(); i++) {
-        ycpArg = va_arg(args, YCPValue);
+        ycpArg = args->value(i+2);
         if (ycpArg.isNull())
             ycpArg = YCPVoid();
 
@@ -99,7 +99,6 @@ static YCPValue CallYCPFunction(const string & namespace_name, const string & fu
         return YCPNull();
     }
 
-    va_end(args);
 
     ycpRetValue = func_call->evaluateCall();
     delete func_call;
@@ -108,6 +107,86 @@ static YCPValue CallYCPFunction(const string & namespace_name, const string & fu
         return YCPNull();
     }
     return ycpRetValue;
+}
+
+PyObject *ycp_to_pyval(YCPValue val)
+{
+    if (val->isString())
+        return PyString_FromString(val->asString()->value().c_str());
+    else if (val->isInteger())
+        return PyInt_FromLong(val->asInteger()->value());
+    else if (val->isBoolean())
+        return PyBool_FromLong(val->asBoolean()->value());
+    else if (val->isVoid())
+        Py_RETURN_NONE;
+    else if (val->isFloat())
+        return PyFloat_FromDouble(val->asFloat()->value());
+    else if (val->isSymbol())
+        return PyString_FromString(val->asSymbol()->symbol().c_str());
+    else
+        Py_RETURN_NONE;
+        //return val;
+}
+
+static PyMethodDef new_module_methods[] =
+{
+    //{"__ycp_to_pyval", (PyCFunction)py_ycp_to_pyval, METH_VARARGS, NULL},
+    //{"__run", (PyCFunction)py_call_ycp_function, METH_VARARGS, NULL},
+    {NULL, NULL, 0, NULL}
+};
+
+static bool RegFunctions(const string & NameSpace, YCPList list_functions, YCPList list_variables)
+{
+    PyObject *new_module = Py_InitModule(NameSpace.c_str(), new_module_methods);
+    if (new_module == NULL) return false;
+
+    PyObject *new_module_dict = PyModule_GetDict(new_module);
+    if (new_module_dict == NULL) return false;
+
+    auto g = PyDict_New();
+    if (!g) return false;
+    PyDict_SetItemString(g, "__builtins__", PyEval_GetBuiltins());
+
+    for (int i = 0; i < list_functions.size(); i++) {
+        string function = list_functions->value(i)->asString()->value();
+        stringstream func_def;
+        PyObject *code;
+        func_def << "def " << function << "(*args):" << endl;
+        func_def << "\tfrom ycp2 import CallYCPFunction, ycp_to_pyval" << endl;
+        func_def << "\tfrom ytypes import ytype" << endl;
+        func_def << "\treturn ycp_to_pyval(CallYCPFunction(ytype(['" << NameSpace << "', '" << function << "']+list(args))))" << endl;
+
+        code = PyRun_String(func_def.str().c_str(), Py_single_input, g, new_module_dict);
+        Py_XDECREF(code);
+    }
+
+    return true;
+}
+
+YCPList * ycpListFunctions;
+YCPList * ycpListVariables;
+
+static bool HandleSymbolTable (const SymbolEntry & se)
+{
+    if (se.isFunction ()) {
+        ycpListFunctions->add(YCPString(se.name()));
+    } else if (se.isVariable ()) {
+        ycpListVariables->add(YCPString(se.name()));
+    }
+    return true;
+}
+
+void module_import(const string & ns_name)
+{
+    Y2Namespace *ns = getNs(ns_name.c_str());
+    ycpListFunctions = new YCPList();
+    ycpListVariables = new YCPList();
+
+    ns->table()->forEach (&HandleSymbolTable);
+    RegFunctions(ns_name, *ycpListFunctions, *ycpListVariables);
+
+    delete ycpListFunctions;
+    delete ycpListVariables;
 }
 
 static bool init_ui(const string & ui_name)
@@ -137,36 +216,6 @@ static bool init_ui(const string & ui_name)
         y2debug ("UI component already present: %s", c->name ().c_str ());
     }
     return true;
-}
-
-void Wizard::CreateDialog()
-{
-    CallYCPFunction("Wizard", "CreateDialog");
-}
-
-void Wizard::SetContentsButtons(const string & title, const YCPValue & contents, const string & help_txt, const string & back_txt, const string & next_txt)
-{
-    CallYCPFunction("Wizard", "SetContentsButtons", YCPString(title), contents, YCPString(help_txt), YCPString(back_txt), YCPString(next_txt));
-}
-
-void Wizard::DisableBackButton()
-{
-
-}
-
-void Wizard::DisableNextButton()
-{
-
-}
-
-void Wizard::EnableNextButton()
-{
-
-}
-
-void Wizard::DisableAbortButton()
-{
-
 }
 
 void startup_yuicomponent()
