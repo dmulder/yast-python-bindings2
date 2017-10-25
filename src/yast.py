@@ -8,10 +8,28 @@ from ycp2 import YCPBoolean as Boolean
 from ycp2 import YCPFloat as Float
 from ycp2 import Id, Opt
 from ycp2 import startup_yuicomponent, shutdown_yuicomponent
-from ycp2 import module_import
-module_import('Wizard')
-import Wizard
-from ytypes import pytval_to_ycp, ycp_to_pyval
+
+class YastClass(object): pass
+
+def import_module(ns_name):
+    from ycp2 import module_symbols
+    from ytypes import pytval_to_ycp, ycp_to_pyval
+
+    funcs = module_symbols(ns_name)
+
+    module = type(ns_name, (YastClass,), {})
+    for func in funcs:
+        func_def =  '@staticmethod\n'
+        func_def += 'def %s(*args):\n' % func
+        func_def += '   from ycp2 import CallYCPFunction\n'
+        func_def += '   from ytypes import pytval_to_ycp, ycp_to_pyval\n'
+        func_def += '   args = tuple([pytval_to_ycp(arg) for arg in args])\n'
+        func_def += '   return ycp_to_pyval(CallYCPFunction("%s", "%s", *args))\n' % (ns_name, func)
+        exec(func_def)
+        exec("setattr(module, '%s', %s)" % (func, func))
+    return module
+
+Wizard = import_module('Wizard')
 
 class UISequencer:
     def __init__(self, *cli_args):
@@ -33,6 +51,7 @@ class UISequencer:
         UI.CloseDialog()
 
 def run(func, *args):
+    from ytypes import pytval_to_ycp
     l = List()
     for item in args:
         l.push_back(pytval_to_ycp(item))
@@ -895,7 +914,7 @@ def TimezoneSelector(*args):
     TimezoneSelector (	string pixmap , map timezones );
 
     Parameters
-    string pixmap  path to a jpg or png of a world map - with 0°0° being the middle of the picture
+    string pixmap  path to a jpg or png of a world map - with being the middle of the picture
     map timezones  a map of timezones. The map should be between e.g. Europe/London
         and the tooltip to be displayed ("United Kingdom")
     """

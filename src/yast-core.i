@@ -4,6 +4,11 @@
 
 %include std_string.i
 %include std_map.i
+%include std_vector.i
+namespace std
+{
+  %template(StringVector) vector<string>;
+}
 %inline %{
 using namespace std;
 %}

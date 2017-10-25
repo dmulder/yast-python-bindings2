@@ -26,11 +26,14 @@
 #include <vector>
 #include <cstdarg>
 #include <sstream>
+#include <vector>
 using namespace std;
 
 PyObject *ycp_to_pyval(YCPValue val);
 void startup_yuicomponent();
 void shutdown_yuicomponent();
 YCPValue CallYCPFunction(const string & namespace_name, const string & function_name, ...);
-void module_import(const string & ns_name);
+YCPValue GetYCPVariable(const string & namespace_name, const string & variable_name);
+void SetYCPVariable(const string & namespace_name, const string & variable_name, YCPValue value);
+vector<string> module_symbols(const string & ns_name);
 
