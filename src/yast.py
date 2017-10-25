@@ -23,8 +23,11 @@ def import_module(ns_name):
         func_def += 'def %s(*args):\n' % func
         func_def += '   from ycp2 import CallYCPFunction\n'
         func_def += '   from ytypes import pytval_to_ycp, ycp_to_pyval\n'
-        func_def += '   args = tuple([pytval_to_ycp(arg) for arg in args])\n'
-        func_def += '   return ycp_to_pyval(CallYCPFunction("%s", "%s", *args))\n' % (ns_name, func)
+        func_def += '   if len(args) > 0:\n'
+        func_def += '       args = tuple([pytval_to_ycp(arg) for arg in args])\n'
+        func_def += '       return ycp_to_pyval(CallYCPFunction("%s", "%s", *args))\n' % (ns_name, func)
+        func_def += '   else:\n'
+        func_def += '       return ycp_to_pyval(CallYCPFunction("%s", "%s"))\n'
         exec(func_def, globals())
         exec("setattr(module, '%s', %s)" % (func, func))
     return module
