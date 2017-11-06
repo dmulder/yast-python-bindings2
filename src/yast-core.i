@@ -46,13 +46,18 @@ class YCPString;
     $1 = new YPythonCode($input);
 }
 %typemap(typecheck,precedence=5000) YCodePtr {
-    $1 = PyFunction_Check($input);
+    $1 = PyFunction_Check(PyTuple_GetItem($input, 0));
 }
 
 %ignore YCPCodeRep;
 %ignore YCPEntryRep;
 %ignore YCPEntry;
 %include <ycp/YCPCode.h>
+%extend YCPCode {
+    YCPValue evaluate (bool cse = false) {
+        return (*($self))->evaluate(cse);
+    }
+}
 
 %varargs(25, char * opt = NULL) Opt;
 

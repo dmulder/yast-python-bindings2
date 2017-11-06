@@ -9,6 +9,10 @@ from ycp2 import YCPCode as Code
 from ycp2 import YCPMap as Map
 
 def pytval_to_ycp(item):
+    if type(item) is list and callable(item[0]):
+        return Code(tuple(item))
+    elif callable(item):
+        return Code((item,))
     if type(item) is list:
         sl = List()
         for si in item:
@@ -27,8 +31,6 @@ def pytval_to_ycp(item):
         for key, val in item.iteritems():
             sm.add(pytval_to_ycp(key), pytval_to_ycp(val))
         return sm
-    elif callable(item):
-        return Code(item)
     elif type(item) in [Term, Symbol, String, Integer, Boolean, Float, List, Code, Map]:
         return item
     else:
