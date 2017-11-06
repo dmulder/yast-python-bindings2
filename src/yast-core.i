@@ -12,7 +12,6 @@ using namespace std;
 #include <ycp/YCPFloat.h>
 #include "yast.h"
 #include "ytypes.h"
-#include "YPythonCode.h"
 #include <ycp/YCPCode.h>
 #include <ycp/YCPMap.h>
 %}
@@ -23,6 +22,16 @@ class YCPBoolean;
 class YCPInteger;
 %feature("valuewrapper") YCPString;
 class YCPString;
+
+%typemap(out) YCPValue {
+    $result = ycp_to_pyval($1);
+}
+%typemap(in) YCPValue {
+    $1 = pyval_to_ycp($input);
+}
+%typemap(in) YCPList {
+    $1 = pyval_to_ycp($input)->asList();
+}
 
 %ignore YCPTermRep;
 %include <ycp/YCPTerm.h>
@@ -60,10 +69,6 @@ class YCPString;
 }
 
 %varargs(25, char * opt = NULL) Opt;
-
-%typemap(out) YCPValue {
-    $result = ycp_to_pyval($1);
-}
 
 %include "yast.h"
 

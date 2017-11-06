@@ -151,8 +151,7 @@ bool import_module(const string & ns_name)
             func_def << "\t\"\"\"" << endl;
         }
         func_def << "\tfrom ycp2 import CallYCPFunction" << endl;
-        func_def << "\tfrom ytypes import pytval_to_ycp" << endl;
-        func_def << "\treturn CallYCPFunction(\"" + ns_name + "\", \"" + function + "\", pytval_to_ycp(list(args)))" << endl;
+        func_def << "\treturn CallYCPFunction(\"" + ns_name + "\", \"" + function + "\", list(args))" << endl;
 
         // Register function into dictionary of new module. Returns new reference - must be decremented
         code = PyRun_String(func_def.str().c_str(), Py_single_input, g, new_module_dict);
