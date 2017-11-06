@@ -71,4 +71,4 @@ class YCPString;
 %varargs(25, char * opt = NULL) Opt;
 
 %include "yast.h"
-
+%include "ytypes.h"
