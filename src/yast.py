@@ -5,6 +5,7 @@ from ycp2 import YCPTerm as Term
 from ycp2 import YCPInteger as Integer
 from ycp2 import YCPBoolean as Boolean
 from ycp2 import YCPFloat as Float
+from ycp2 import YCPCode as Code
 from ycp2 import Id, Opt
 from ycp2 import import_module
 if import_module('UI'):

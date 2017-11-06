@@ -129,3 +129,4 @@ ycp2.py
 *.o
 *.lo
 *.la
+YCPMap.h
