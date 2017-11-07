@@ -35,7 +35,7 @@ class UISequencer:
 
         UI.CloseDialog()
 
-def pyval_to_ycp(item):
+def py_pyval_to_ycp(item):
     if type(item) is list and callable(item[0]):
         return Code(tuple(item))
     elif callable(item):
@@ -43,7 +43,7 @@ def pyval_to_ycp(item):
     if type(item) is list:
         sl = List()
         for si in item:
-            sl.push_back(pytval_to_ycp(si))
+            sl.push_back(py_pyval_to_ycp(si))
         return sl
     elif type(item) is str:
         return String(item)
@@ -56,7 +56,7 @@ def pyval_to_ycp(item):
     elif type(item) is dict:
         sm = Map()
         for key, val in item.iteritems():
-            sm.add(pytval_to_ycp(key), pytval_to_ycp(val))
+            sm.add(py_pyval_to_ycp(key), py_pyval_to_ycp(val))
         return sm
     elif type(item) in [Term, Symbol, String, Integer, Boolean, Float, List, Code, Map]:
         return item
@@ -66,7 +66,7 @@ def pyval_to_ycp(item):
 def run(func, *args):
     l = List()
     for item in args:
-        l.push_back(pyval_to_ycp(item))
+        l.push_back(py_pyval_to_ycp(item))
     return Term(func, l)
 
 def BarGraph(*args):
