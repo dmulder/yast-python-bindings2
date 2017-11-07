@@ -16,6 +16,8 @@ using namespace std;
 #include <ycp/YCPMap.h>
 %}
 
+%include "ytypes.h"
+
 %feature("valuewrapper") YCPBoolean;
 class YCPBoolean;
 %feature("valuewrapper") YCPInteger;
@@ -71,4 +73,3 @@ class YCPString;
 %varargs(25, char * opt = NULL) Opt;
 
 %include "yast.h"
-%include "ytypes.h"

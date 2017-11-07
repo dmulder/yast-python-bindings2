@@ -36,32 +36,11 @@ class UISequencer:
         UI.CloseDialog()
 
 def py_pyval_to_ycp(item):
-    if type(item) is list and callable(item[0]):
-        return Code(tuple(item))
-    elif callable(item):
-        return Code((item,))
-    if type(item) is list:
-        sl = List()
-        for si in item:
-            sl.push_back(py_pyval_to_ycp(si))
-        return sl
-    elif type(item) is str:
-        return String(item)
-    elif type(item) is int:
-        return Integer(item)
-    elif type(item) is bool:
-        return Boolean(item)
-    elif type(item) is float:
-        return Float(item)
-    elif type(item) is dict:
-        sm = Map()
-        for key, val in item.iteritems():
-            sm.add(py_pyval_to_ycp(key), py_pyval_to_ycp(val))
-        return sm
-    elif type(item) in [Term, Symbol, String, Integer, Boolean, Float, List, Code, Map]:
+    from ycp2 import pyval_to_ycp
+    if type(item) in [Term, Symbol, String, Integer, Boolean, Float, List, Code, Map]:
         return item
     else:
-        raise SyntaxError, 'Type of value "%s" unrecognized, %s' % (item, str(type(item)))
+        return pyval_to_ycp(item)
 
 def run(func, *args):
     l = List()
