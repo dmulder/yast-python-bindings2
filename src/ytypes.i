@@ -1,15 +1,54 @@
-#include "ytypes.h"
+%{
+YCPValue pyval_to_ycp(PyObject *input)
+{
+    int ret;
+    void *arg = 0;
+
+    if (input == Py_None)
+        return YCPNull();
+    if (PyBool_Check(input)) {
+        if (PyObject_Compare(input, Py_True) == 0)
+            return YCPBoolean(true);
+        else
+            return YCPBoolean(false);
+    }
+    if (PyInt_Check(input))
+        return YCPInteger(PyInt_AsLong(input));
+    if (PyFloat_Check(input))
+        return YCPFloat(PyFloat_AsDouble(input));
+    if (PyString_Check(input))
+        return YCPString(PyString_AsString(input));
+    if (PyList_Check(input)) {
+        auto size = PyList_Size(input);
+        YCPList l;
+        for (int i = 0; i < size; i++)
+            l->add(pyval_to_ycp(PyList_GetItem(input, i)));
+        return l;
+    }
+    if (PyTuple_Check(input)) {
+        auto size = PyTuple_Size(input);
+        YCPList l;
+        for (int i = 0; i < size; i++)
+            l->add(pyval_to_ycp(PyTuple_GetItem(input, i)));
+        return l;
+    }
+    ret = SWIG_ConvertPtr(input, &arg, SWIGTYPE_p_YCPValue, SWIG_POINTER_DISOWN | 0);
+    if (SWIG_IsOK(ret))
+        return *(reinterpret_cast<YCPValue*>(arg));
+
+    return YCPNull();
+}
 
 PyObject *ycp_to_pyval(YCPValue val)
 {
+    if (val.isNull() || val->isVoid())
+        Py_RETURN_NONE;
     if (val->isString())
         return PyString_FromString(val->asString()->value().c_str());
     else if (val->isInteger())
         return PyInt_FromLong(val->asInteger()->value());
     else if (val->isBoolean())
         return PyBool_FromLong(val->asBoolean()->value());
-    else if (val->isVoid() || val.isNull())
-        Py_RETURN_NONE;
     else if (val->isFloat())
         return PyFloat_FromDouble(val->asFloat()->value());
     else if (val->isSymbol())
@@ -43,4 +82,8 @@ PyObject *ycp_to_pyval(YCPValue val)
 
     Py_RETURN_NONE;
 }
+%}
+
+YCPValue pyval_to_ycp(PyObject *input);
+PyObject *ycp_to_pyval(YCPValue val);
 

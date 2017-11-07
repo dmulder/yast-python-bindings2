@@ -34,10 +34,10 @@ class UISequencer:
         UI.CloseDialog()
 
 def run(func, *args):
-    from ytypes import pytval_to_ycp
+    from ycp2 import pyval_to_ycp
     l = List()
     for item in args:
-        l.push_back(pytval_to_ycp(item))
+        l.push_back(pyval_to_ycp(item))
     return Term(func, l)
 
 def BarGraph(*args):

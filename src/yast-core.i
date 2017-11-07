@@ -11,7 +11,6 @@ using namespace std;
 %{
 #include <ycp/YCPFloat.h>
 #include "yast.h"
-#include "ytypes.h"
 %}
 
 %feature("valuewrapper") YCPBoolean;
@@ -35,11 +34,19 @@ class YCPString;
 %include <ycp/YCPBoolean.h>
 %ignore YCPFloatRep;
 %include <ycp/YCPFloat.h>
-%varargs(25, char * opt = NULL) Opt;
+
+%include ytypes.i
 
 %typemap(out) YCPValue {
     $result = ycp_to_pyval($1);
 }
+%typemap(in) YCPValue {
+    $1 = pyval_to_ycp($input);
+}
+%typemap(in) YCPList {
+    $1 = pyval_to_ycp($input)->asList();
+}
 
+%varargs(25, char * opt = NULL) Opt;
 %include "yast.h"
 
