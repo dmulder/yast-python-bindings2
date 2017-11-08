@@ -8,13 +8,15 @@ from ycp2 import YCPFloat as Float
 from ycp2 import YCPCode as Code
 from ycp2 import YCPMap as Map
 from ycp2 import Id, Opt
-from ycp2 import import_module
-if import_module('UI'):
-    import UI
-if import_module('Wizard'):
-    import Wizard
-if import_module('Sequencer'):
-    import Sequencer
+
+def import_module(module):
+    from ycp2 import import_module as ycp2_import_module
+    if ycp2_import_module(module):
+        globals()[module] = __import__(module)
+
+import_module('UI')
+import_module('Wizard')
+import_module('Sequencer')
 
 def run(func, *args):
     from ycp2 import pyval_to_ycp
