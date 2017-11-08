@@ -16,25 +16,6 @@ if import_module('Wizard'):
 if import_module('Sequencer'):
     import Sequencer
 
-class UISequencer:
-    def __init__(self, *cli_args):
-        self.cli_args = cli_args
-
-    def run(self, funcs):
-        Wizard.CreateDialog()
-
-        for func in funcs:
-            ret = func(*self.cli_args)
-            if type(ret) is tuple:
-                data, ret = ret
-                self.cli_args = (data,) + self.cli_args
-            if str(ret) == 'next':
-                continue
-            elif str(ret) == 'abort':
-                break
-
-        UI.CloseDialog()
-
 def run(func, *args):
     from ycp2 import pyval_to_ycp
     l = List()
