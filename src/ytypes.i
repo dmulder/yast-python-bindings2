@@ -25,6 +25,17 @@ YCPValue pyval_to_ycp(PyObject *input)
             l->add(pyval_to_ycp(PyList_GetItem(input, i)));
         return l;
     }
+    if (PyDict_Check(input)) {
+        YCPMap m;
+        if (PyDict_Size(input) == 0)
+            return m;
+
+        PyObject *key, *value;
+        Py_ssize_t pos = 0;
+        while (PyDict_Next(input, &pos, &key, &value))
+            m->add(pyval_to_ycp(key), pyval_to_ycp(value));
+        return m;
+    }
     if (PyTuple_Check(input)) {
         auto size = PyTuple_Size(input);
         YCPList l;
