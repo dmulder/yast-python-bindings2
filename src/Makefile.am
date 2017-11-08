@@ -10,7 +10,7 @@ python_PYTHON = ycp2.py yast.py
 
 pyexec_LTLIBRARIES = _ycp2.la
 
-_ycp2_la_SOURCES = yast-core_wrap.cxx yast.cpp yast-core.i ytypes.i
+_ycp2_la_SOURCES = yast-core_wrap.cxx yast.cpp yast-core.i ytypes.i YPythonCode.cc
 
 _ycp2_la_LDFLAGS = -module ${PYTHON_LDFLAGS} -Wl,-rpath=$(py2langdir)
 

@@ -20,11 +20,20 @@ YCPValue pyval_to_ycp(PyObject *input)
         return YCPString(PyString_AsString(input));
     if (PyList_Check(input)) {
         auto size = PyList_Size(input);
-        YCPList l;
-        for (int i = 0; i < size; i++)
-            l->add(pyval_to_ycp(PyList_GetItem(input, i)));
-        return l;
+        if (size > 0 && PyFunction_Check(PyList_GetItem(input, 0))) {
+            auto t = PyTuple_New(size);
+            for (int i = 0; i < size; i++)
+                PyTuple_SetItem(t, i, PyList_GetItem(input, i));
+            return YCPCode(new YPythonCode(t));
+        } else {
+            YCPList l;
+            for (int i = 0; i < size; i++)
+                l->add(pyval_to_ycp(PyList_GetItem(input, i)));
+            return l;
+        }
     }
+    if (PyFunction_Check(input))
+        return YCPCode(new YPythonCode(PyTuple_Pack(1, input)));
     if (PyDict_Check(input)) {
         YCPMap m;
         if (PyDict_Size(input) == 0)
@@ -95,6 +104,5 @@ PyObject *ycp_to_pyval(YCPValue val)
 }
 %}
 
-YCPValue pyval_to_ycp(PyObject *input);
-PyObject *ycp_to_pyval(YCPValue val);
+%include "ytypes.h"
 
